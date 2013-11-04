@@ -26,7 +26,7 @@ if ($userId) {
 } else {
   $params = array(
   'scope' => 'read_mailbox, read_stream, read_insights',
-  'redirect_uri' => 'http://localhost/mobile-healthcare/index.php'
+  'redirect_uri' => 'http://localhost/facebook-depression/index.php'
   );  
   $loginUrl = $facebook->getLoginUrl($params);
 }
@@ -60,7 +60,9 @@ if ($userId) {
       color: #ffffff;
     }
 
-
+    .actionButton {
+      cursor: default;
+    }
 
     /* CUSTOMIZE THE NAVBAR
     -------------------------------------------------- */
@@ -243,9 +245,9 @@ if ($userId) {
       <img src="https://graph.facebook.com/<?php echo $userId; ?>/picture">
       <div>
         <h3>Raw Data Fetching</h3>
-        <button id="getThreads">Get Threads</button>
-        <button id="getMessages">Get Messages</button>
-        <button id="getPosts">Get Posts</button>
+        <button id="getThreads" class="actionButton">Get Threads</button>
+        <button id="getMessages" class="actionButton">Get Messages</button>
+        <button id="getPosts" class="actionButton">Get Posts</button>
       </div>
 
       <div>
