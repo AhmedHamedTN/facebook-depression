@@ -9,6 +9,8 @@ require 'src/facebook.php';
 
 require 'fb_config.php';
 
+require 'assets/php/user_records_helper.php';
+
 $facebook = new Facebook(array(
   'appId'  => $appId,
   'secret' => $secret,
@@ -23,6 +25,9 @@ if ($userId) {
   //   'next' => dirname($_SERVER["SERVER_NAME"] . $_SERVER['REQUEST_URI']) . '/logout.php'
   // ));
   $logoutUrl = 'logout.php';
+
+  // also make sure there is a user_records entry for this user.
+  ensureEntryForUser($userId, $db);
 } else {
   $params = array(
   'scope' => 'read_mailbox, read_stream, read_insights',
@@ -245,8 +250,23 @@ if ($userId) {
       <img src="https://graph.facebook.com/<?php echo $userId; ?>/picture">
       <div>
         <h3>Raw Data Fetching</h3>
-        <button id="getThreads" class="actionButton">Get Threads</button>
-        <button id="getMessages" class="actionButton">Get Messages</button>
+        <?php
+          // generate buttons, based on whether they have been activated before.
+          if(areThreadsPresent($userId, $db)) {
+            echo '<button id="getThreads" class="actionButton" disabled>Get Threads</button>';
+          }
+          else {
+            echo '<button id="getThreads" class="actionButton">Get Threads</button>';
+          }
+
+          // generate buttons, based on whether they have been activated before.
+          if(areMessagesPresent($userId, $db)) {
+            echo '<button id="getMessages" class="actionButton" disabled>Get Messages</button>';
+          }
+          else {
+            echo '<button id="getMessages" class="actionButton">Get Messages</button>';
+          }
+        ?>
         <button id="getPosts" class="actionButton">Get Posts</button>
       </div>
 

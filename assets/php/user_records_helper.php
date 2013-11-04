@@ -1,5 +1,36 @@
 <?php
 /**
+ * Creates a row in the user_records table for the user if there is not
+ * one already.
+ */
+function ensureEntryForUser($userId, $db) {
+  // select something arbitrary to see if there is a row.
+  $stmt = $db->prepare("SELECT 1 FROM user_records 
+                        WHERE user_id='{$userId}'");
+  $stmt->execute();
+  $res = $stmt->get_result();
+
+  // check for the case where there is no match in the db.
+  if ($res->num_rows == 0) {
+    // close the last statement and insert a new row in the table.
+    $stmt->close();
+    $stmt = $db->prepare("INSERT INTO user_records (user_id, has_threads, has_messages, has_posts)
+                          Values (?, ?, ?, ?)");
+    $hasThreads = '0';
+    $hasMessages = '0';
+    $hasPosts = '0';
+    $stmt->bind_param('ssss', $userId, $hasThreads, $hasMessages, $hasPosts);
+
+    if (!$stmt->execute()) {
+      echo 'Failed to make row for user in user records<br />';
+      echo $db->error, '<br />';
+    }
+
+    $stmt->close();
+  }
+}
+
+/**
  * Checks whether a user's messages have been retrieved before.
  * Takes in a user id and a mysqli object to perform the lookup on.
  * Returns true if the messages have been retrieved before, false otherwise.

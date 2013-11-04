@@ -33,6 +33,9 @@ else if ($_POST['request'] == 'Get Posts') {
  * Takes in a the user's facebook object and the database object for the server.
  */
 function getAndStoreThreads($facebook, $db) {
+  // we need this library to update the user_records table.
+  require dirname(__FILE__).'/user_records_helper.php';
+
   try {
     $threads = array();
     $inboxThreadsFinished = 0;
@@ -110,6 +113,9 @@ function getAndStoreThreads($facebook, $db) {
       }
       $stmt->close();
     }
+
+    // finally, mark the threads as retrieved in the user_details table.
+    setThreadsAsPresent($facebook->getUser(), $db);
   }
   catch (FacebookApiException $e) {
     error_log($e);
@@ -124,6 +130,9 @@ function getAndStoreThreads($facebook, $db) {
  * Takes in the facebook object for the user, and the database object.
  */
 function getAndStoreMessages($howManyWeeksBack, $facebook, $db) {
+  // we need this library to update the user_records table.
+  require dirname(__FILE__).'/user_records_helper.php';
+
   // Get userId.
   $userId = $facebook->getUser();
 
@@ -185,6 +194,9 @@ function getAndStoreMessages($howManyWeeksBack, $facebook, $db) {
       // Refresh messages array as to not run out of memory.
       $messages = array();
     }
+
+    // finally, mark the messages as retrieved in the user_details table.
+    setThreadsAsPresent($userId, $db);
   }
   catch (FacebookApiException $e) {
     error_log($e);
