@@ -294,7 +294,6 @@ if ($userId) {
 	<script src="bootstrap/js/bootstrap-typeahead.js" type="text/javascript"></script>
   <script type="text/javascript">// <![CDATA[
   
-  $("#getThreads").css("cursor", "default");
   $("#getThreads").click(function() {
     if($(this).attr("disabled") !== true) {
       $.ajax({
@@ -309,7 +308,6 @@ if ($userId) {
     }
   });
 
-  $("#getMessages").css("cursor", "default");
   $("#getMessages").click(function() {
     if($(this).attr("disabled") !== true) {
       $.ajax({
