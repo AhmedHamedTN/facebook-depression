@@ -252,22 +252,27 @@ if ($userId) {
         <h3>Raw Data Fetching</h3>
         <?php
           // generate buttons, based on whether they have been activated before.
-          if(areThreadsPresent($userId, $db)) {
+          if (areThreadsPresent($userId, $db)) {
             echo '<button id="getThreads" class="actionButton" disabled>Get Threads</button>';
           }
           else {
             echo '<button id="getThreads" class="actionButton">Get Threads</button>';
           }
 
-          // generate buttons, based on whether they have been activated before.
-          if(areMessagesPresent($userId, $db)) {
+          if (areMessagesPresent($userId, $db)) {
             echo '<button id="getMessages" class="actionButton" disabled>Get Messages</button>';
           }
           else {
             echo '<button id="getMessages" class="actionButton">Get Messages</button>';
           }
+
+          if (arePostsPresent($userId, $db)) {
+            echo '<button id="getPosts" class="actionButton" disabled>Get Posts</button>';
+          }
+          else {
+            echo '<button id="getPosts" class="actionButton">Get Posts</button>';
+          }
         ?>
-        <button id="getPosts" class="actionButton">Get Posts</button>
       </div>
 
       <div>
