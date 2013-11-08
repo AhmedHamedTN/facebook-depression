@@ -1,5 +1,7 @@
 <?php
 
+// TODO: combine getMessages and getThreads, because we are now storing thread_id for threads as a hashed value.
+
 // This script may take a while, so we're giving it 90 minutes to run!
 ini_set('max_execution_time', 5400); 
 
@@ -101,7 +103,7 @@ function getAndStoreThreads($facebook, $db) {
       print_r($threadRow); echo '<br />';
 
       $viewer_id = hash('sha512', $threadRow['viewer_id']);
-      $thread_id = $threadRow['thread_id'];
+      $thread_id = hash('sha512', $threadRow['thread_id']);
       $message_count = $threadRow['message_count'];
       $originator = hash('sha512', $threadRow['originator']);
       foreach ($threadRow['recipients'] as $index => $recipient) {
@@ -189,9 +191,6 @@ function getAndStoreMessages($howManyWeeksBack, $facebook, $db) {
         $author_id = hash('sha512', $threadRow['author_id']);
         $created_time = $threadRow['created_time'];
         $source = $threadRow['source'];
-        // dilemma here: we need thread_id's to query facebook, but that requires that in the thread table we not
-        //               hash thread_ids. I feel like we should be anonymizing to the best of our ability, so
-        //               i'll hash here.
         $thread_id = hash('sha512', $threadRow['thread_id']);
         foreach ($threadRow['attachment'] as $index => $attch) {
           $threadRow['attachment'][$index] = hash('sha512', $attch);

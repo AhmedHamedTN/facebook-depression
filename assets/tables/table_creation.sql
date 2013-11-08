@@ -1,7 +1,7 @@
 CREATE TABLE `facebook_threads` (
  `id` int(11) NOT NULL AUTO_INCREMENT,
  `viewer_id` varchar(128) NOT NULL,
- `thread_id` varchar(50) NOT NULL,
+ `thread_id` varchar(128) NOT NULL,
  `message_count` int(11) NOT NULL,
  -- `subject` varchar(200) NOT NULL,
  `originator` varchar(128) NOT NULL,
