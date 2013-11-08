@@ -184,12 +184,18 @@ function getAndStoreMessages($howManyWeeksBack, $facebook, $db) {
         $stmt = $db->prepare("INSERT INTO facebook_messages (viewer_id, message_id, author_id, created_time, source, thread_id, attachment)
                                   VALUES (?, ?, ?, ?, ?, ?, ?)");
         print_r($threadRow); echo '<br />';
-        $viewer_id = $threadRow['viewer_id'];
-        $message_id = $threadRow['message_id'];
-        $author_id = $threadRow['author_id'];
+        $viewer_id = hash('sha512', $threadRow['viewer_id']);
+        $message_id = hash('sha512', $threadRow['message_id']);
+        $author_id = hash('sha512', $threadRow['author_id']);
         $created_time = $threadRow['created_time'];
         $source = $threadRow['source'];
-        $thread_id = $threadRow['thread_id'];
+        // dilemma here: we need thread_id's to query facebook, but that requires that in the thread table we not
+        //               hash thread_ids. I feel like we should be anonymizing to the best of our ability, so
+        //               i'll hash here.
+        $thread_id = hash('sha512', $threadRow['thread_id']);
+        foreach ($threadRow['attachment'] as $index => $attch) {
+          $threadRow['attachment'][$index] = hash('sha512', $attch);
+        }
         $attachment = json_encode($threadRow['attachment']);
         $stmt->bind_param('ssssssss', $viewer_id, $message_id, $author_id, $created_time, $source, $thread_id, $attachment);
         if (!$stmt->execute()) {
