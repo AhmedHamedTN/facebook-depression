@@ -93,21 +93,24 @@ function getAndStoreThreads($facebook, $db) {
 
     // Store the threads in the database
     foreach ($threads as $threadId => $threadRow) {
-      $stmt = $db->prepare("INSERT INTO facebook_threads (viewer_id, thread_id, message_count, subject, originator, recipients, updated_time, unseen, unread, parent_message_id, has_attachment)
-                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+      $stmt = $db->prepare("INSERT INTO facebook_threads (viewer_id, thread_id, message_count, originator, recipients, updated_time, unseen, unread, parent_message_id, has_attachment)
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
       print_r($threadRow); echo '<br />';
-      $viewer_id = $threadRow['viewer_id'];
+
+      $viewer_id = hash('sha512', $threadRow['viewer_id']);
       $thread_id = $threadRow['thread_id'];
       $message_count = $threadRow['message_count'];
-      $subject = $threadRow['subject'];
-      $originator = $threadRow['originator'];
+      $originator = hash('sha512', $threadRow['originator']);
+      foreach ($threadRow['recipients'] as $index => $recipient) {
+        $threadRow['recipients'][$index] = hash('sha512', $recipient);
+      }
       $recipients = json_encode($threadRow['recipients']);
       $updated_time = $threadRow['updated_time'];
       $unseen = $threadRow['unseen'];
       $unread = $threadRow['unread'];
-      $parent_message_id = $threadRow['parent_message_id'];
+      $parent_message_id = hash('sha512', $threadRow['parent_message_id']);
       $has_attachment = $threadRow['has_attachment'];
-      $stmt->bind_param('ssissssiiii', $viewer_id, $thread_id, $message_count, $subject, $originator, $recipients, $updated_time, $unseen, $unread, $parent_message_id, $has_attachment);
+      $stmt->bind_param('ssisssiisi', $viewer_id, $thread_id, $message_count, $originator, $recipients, $updated_time, $unseen, $unread, $parent_message_id, $has_attachment);
       if (!$stmt->execute()) {
         echo '<br />Statement failed :(<br />';
       }
@@ -115,7 +118,7 @@ function getAndStoreThreads($facebook, $db) {
     }
 
     // finally, mark the threads as retrieved in the user_details table.
-    setThreadsAsPresent($facebook->getUser(), $db);
+    // setThreadsAsPresent($facebook->getUser(), $db);
   }
   catch (FacebookApiException $e) {
     error_log($e);
