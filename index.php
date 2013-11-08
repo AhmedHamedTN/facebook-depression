@@ -21,13 +21,14 @@ $userId = $facebook->getUser();
 
 /* Create login/logout links. */
 if ($userId) {
+  $hashedUserId = hash('sha512', $userId);
   // $logoutUrl = $facebook->getLogoutUrl(array(
   //   'next' => dirname($_SERVER["SERVER_NAME"] . $_SERVER['REQUEST_URI']) . '/logout.php'
   // ));
   $logoutUrl = 'logout.php';
 
   // also make sure there is a user_records entry for this user.
-  ensureEntryForUser($userId, $db);
+  ensureEntryForUser($hashedUserId, $db);
 } else {
   $params = array(
   'scope' => 'read_mailbox, read_stream, read_insights',
@@ -250,21 +251,21 @@ if ($userId) {
         <h3>Raw Data Fetching</h3>
         <?php
           // generate buttons, based on whether they have been activated before.
-          if (areThreadsPresent($userId, $db)) {
+          if (areThreadsPresent($hashedUserId, $db)) {
             echo '<button id="getThreads" class="actionButton" disabled>Get Threads</button>';
           }
           else {
             echo '<button id="getThreads" class="actionButton">Get Threads</button>';
           }
 
-          if (areMessagesPresent($userId, $db)) {
+          if (areMessagesPresent($hashedUserId, $db)) {
             echo '<button id="getMessages" class="actionButton" disabled>Get Messages</button>';
           }
           else {
             echo '<button id="getMessages" class="actionButton">Get Messages</button>';
           }
 
-          if (arePostsPresent($userId, $db)) {
+          if (arePostsPresent($hashedUserId, $db)) {
             echo '<button id="getPosts" class="actionButton" disabled>Get Posts</button>';
           }
           else {

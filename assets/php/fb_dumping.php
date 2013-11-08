@@ -36,6 +36,9 @@ function getAndStoreThreads($facebook, $db) {
   // we need this library to update the user_records table.
   require dirname(__FILE__).'/user_records_helper.php';
 
+  $userId = $facebook->getUser();
+  $hashedUserId = hash('sha512', $userId);
+
   try {
     $threads = array();
     $inboxThreadsFinished = 0;
@@ -118,7 +121,7 @@ function getAndStoreThreads($facebook, $db) {
     }
 
     // finally, mark the threads as retrieved in the user_details table.
-    // setThreadsAsPresent($facebook->getUser(), $db);
+    setThreadsAsPresent($hashedUserId, $db);
   }
   catch (FacebookApiException $e) {
     error_log($e);
