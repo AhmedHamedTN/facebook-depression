@@ -246,8 +246,6 @@ if ($userId) {
 
     <!-- If the user is logged in, do things. -->
     <?php if ($userId): ?>
-      <h3>You</h3>
-      <img src="https://graph.facebook.com/<?php echo $userId; ?>/picture">
       <div>
         <h3>Raw Data Fetching</h3>
         <?php
