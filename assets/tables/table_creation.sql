@@ -3,7 +3,6 @@ CREATE TABLE `facebook_threads` (
  `viewer_id` varchar(128) NOT NULL,
  `thread_id` varchar(128) NOT NULL,
  `message_count` int(11) NOT NULL,
- -- `subject` varchar(200) NOT NULL,
  `originator` varchar(128) NOT NULL,
  `recipients` text NOT NULL,
  `updated_time` varchar(10) NOT NULL,
@@ -23,7 +22,7 @@ CREATE TABLE `facebook_messages` (
  `created_time` varchar(10) NOT NULL,
  `source` int(11) NOT NULL,
  `thread_id` varchar(128) NOT NULL,
- `attachment` text NOT NULL,
+ `has_attachment` tinyint(1) NOT NULL,
  PRIMARY KEY (`id`),
  UNIQUE KEY `message_id` (`message_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;

@@ -249,15 +249,11 @@ if ($userId) {
     <?php if ($userId): ?>
       <div>
         <h3>Raw Data Fetching</h3>
+        <form action="assets/php/fb_dumping.php" method="post">
+          <input name="request" type="submit" value="Get Messages" />
+        </form>
         <?php
           // generate buttons, based on whether they have been activated before.
-          if (areThreadsPresent($hashedUserId, $db)) {
-            echo '<button id="getThreads" class="actionButton" disabled>Get Threads</button>';
-          }
-          else {
-            echo '<button id="getThreads" class="actionButton">Get Threads</button>';
-          }
-
           if (areMessagesPresent($hashedUserId, $db)) {
             echo '<button id="getMessages" class="actionButton" disabled>Get Messages</button>';
           }
@@ -316,35 +312,21 @@ if ($userId) {
 	<script src="bootstrap/js/bootstrap-collapse.js" type="text/javascript"></script>
 	<script src="bootstrap/js/bootstrap-carousel.js" type="text/javascript"></script>
 	<script src="bootstrap/js/bootstrap-typeahead.js" type="text/javascript"></script>
-  <script type="text/javascript">// <![CDATA[
-  
-  $("#getThreads").click(function() {
-    if($(this).attr("disabled") !== true) {
-      $.ajax({
-        type: "POST",
-        url: "assets/php/fb_dumping.php",
-        data: {request: "Get Threads"}
-      });
+  <script type="text/javascript">// <![CDATA[ 
 
-      alert("Your Facebook message threads are now being processed!");
+  // $("#getMessages").click(function() {
+  //   if($(this).attr("disabled") !== true) {
+  //     $.ajax({
+  //       type: "POST",
+  //       url: "assets/php/fb_dumping.php",
+  //       data: {request: "Get Messages"}
+  //     });
 
-      $(this).attr("disabled", true);
-    }
-  });
+  //     alert("Your Facebook messages are now being processed!");
 
-  $("#getMessages").click(function() {
-    if($(this).attr("disabled") !== true) {
-      $.ajax({
-        type: "POST",
-        url: "assets/php/fb_dumping.php",
-        data: {request: "Get Messages"}
-      });
-
-      alert("Your Facebook messages are now being processed!");
-
-      $(this).attr("disabled", true);
-    }
-  });
+  //     $(this).attr("disabled", true);
+  //   }
+  // });
 
 	!function ($) {
 	        $(function(){

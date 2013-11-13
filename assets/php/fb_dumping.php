@@ -1,13 +1,14 @@
 <?php
 
-// TODO: combine getMessages and getThreads, because we are now storing thread_id for threads as a hashed value.
-
 // This script may take a while, so we're giving it 90 minutes to run!
 ini_set('max_execution_time', 5400); 
 
 // Get db.
 require dirname(__FILE__).'/../php/db.php';
 $db = get_db();
+
+// we need this library to update the user_records table.
+require dirname(__FILE__).'/user_records_helper.php';
 
 // set up fb instance.
 require dirname(__FILE__).'/../../src/facebook.php';
@@ -17,10 +18,7 @@ $facebook = new Facebook(array(
 ));
 
 // Determine what action to take, based on the post variables.
-if ($_POST['request'] == 'Get Threads') {
-  getAndStoreThreads($facebook, $db); // for future: passing in facebook obj might not be best practice.
-}
-else if ($_POST['request'] == 'Get Messages') {
+if ($_POST['request'] == 'Get Messages') {
   // gets and stores messages for one year back.
   getAndStoreMessages(52, $facebook, $db);
 }
@@ -33,11 +31,10 @@ else if ($_POST['request'] == 'Get Posts') {
  * Get threads from user and store them in db.
  *
  * Takes in a the user's facebook object and the database object for the server.
+ *
+ * Returns an associative array of threads.
  */
 function getAndStoreThreads($facebook, $db) {
-  // we need this library to update the user_records table.
-  require dirname(__FILE__).'/user_records_helper.php';
-
   $userId = $facebook->getUser();
   $hashedUserId = hash('sha512', $userId);
 
@@ -100,7 +97,6 @@ function getAndStoreThreads($facebook, $db) {
     foreach ($threads as $threadId => $threadRow) {
       $stmt = $db->prepare("INSERT INTO facebook_threads (viewer_id, thread_id, message_count, originator, recipients, updated_time, unseen, unread, parent_message_id, has_attachment)
                                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-      print_r($threadRow); echo '<br />';
 
       $viewer_id = hash('sha512', $threadRow['viewer_id']);
       $thread_id = hash('sha512', $threadRow['thread_id']);
@@ -124,6 +120,8 @@ function getAndStoreThreads($facebook, $db) {
 
     // finally, mark the threads as retrieved in the user_details table.
     setThreadsAsPresent($hashedUserId, $db);
+
+    return $threads;
   }
   catch (FacebookApiException $e) {
     error_log($e);
@@ -138,8 +136,7 @@ function getAndStoreThreads($facebook, $db) {
  * Takes in the facebook object for the user, and the database object.
  */
 function getAndStoreMessages($howManyWeeksBack, $facebook, $db) {
-  // we need this library to update the user_records table.
-  require dirname(__FILE__).'/user_records_helper.php';
+  $threads = getAndStoreThreads($facebook, $db);
 
   // Get userId.
   $userId = $facebook->getUser();
@@ -151,19 +148,15 @@ function getAndStoreMessages($howManyWeeksBack, $facebook, $db) {
     // Get all the messages
     $messages = array();
 
-    // Get all the threads, to get the messages from.
-    $stmt = $db->prepare("SELECT thread_id from facebook_threads where viewer_id={$userId}");
-    $stmt->execute();
-    $res = $stmt->get_result();
     // Iterate over all threads
-    while ($row = $res->fetch_assoc()) {
+    foreach($threads as $threadId => $threadRow) {
       $threadDone = 0;
       $offset = 0;
       // In each thread, go over each message.
       while (!$threadDone) {
         $fql = "SELECT viewer_id, message_id, author_id, created_time, body, source, thread_id, attachment 
                 FROM message 
-                WHERE thread_id = ". $row['thread_id'] . " AND created_time > " . $earliestDate . "
+                WHERE thread_id = ". $threadId . " AND created_time > " . $earliestDate . "
                 LIMIT 30 OFFSET " . $offset;
         $ret_obj = $facebook->api(array(
                                    'method' => 'fql.query',
@@ -180,23 +173,25 @@ function getAndStoreMessages($howManyWeeksBack, $facebook, $db) {
           $offset += 30;
         }
       }
-      print_r($messages);
+
       // Store the messages in the database
       foreach ($messages as $index => $threadRow) {
         $stmt = $db->prepare("INSERT INTO facebook_messages (viewer_id, message_id, author_id, created_time, source, thread_id, attachment)
                                   VALUES (?, ?, ?, ?, ?, ?, ?)");
-        print_r($threadRow); echo '<br />';
         $viewer_id = hash('sha512', $threadRow['viewer_id']);
         $message_id = hash('sha512', $threadRow['message_id']);
         $author_id = hash('sha512', $threadRow['author_id']);
         $created_time = $threadRow['created_time'];
         $source = $threadRow['source'];
         $thread_id = hash('sha512', $threadRow['thread_id']);
-        foreach ($threadRow['attachment'] as $index => $attch) {
-          $threadRow['attachment'][$index] = hash('sha512', $attch);
+        // get whether or not the message has an attachment.
+        if (empty($threadRow['attachment'])) {
+          $attachment = 0;
         }
-        $attachment = json_encode($threadRow['attachment']);
-        $stmt->bind_param('ssssssss', $viewer_id, $message_id, $author_id, $created_time, $source, $thread_id, $attachment);
+        else {
+          $attachment = 1;
+        }
+        $stmt->bind_param('sssssss', $viewer_id, $message_id, $author_id, $created_time, $source, $thread_id, $attachment);
         if (!$stmt->execute()) {
           echo '<br />Statement failed :(<br />';
         }
@@ -207,7 +202,7 @@ function getAndStoreMessages($howManyWeeksBack, $facebook, $db) {
     }
 
     // finally, mark the messages as retrieved in the user_details table.
-    setThreadsAsPresent($userId, $db);
+    setMessagesAsPresent($userId, $db);
   }
   catch (FacebookApiException $e) {
     error_log($e);
