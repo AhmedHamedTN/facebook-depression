@@ -17,6 +17,9 @@ $facebook = new Facebook(array(
   'secret' => '7739e409e40a90ce04dbcef70e1fb177',
 ));
 
+// close the session to not block.
+session_write_close();
+
 // Determine what action to take, based on the post variables.
 if ($_POST['request'] == 'Get Messages') {
   // gets and stores messages for one year back.

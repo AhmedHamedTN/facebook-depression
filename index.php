@@ -249,9 +249,6 @@ if ($userId) {
     <?php if ($userId): ?>
       <div>
         <h3>Raw Data Fetching</h3>
-        <form action="assets/php/fb_dumping.php" method="post">
-          <input name="request" type="submit" value="Get Messages" />
-        </form>
         <?php
           // generate buttons, based on whether they have been activated before.
           if (areMessagesPresent($hashedUserId, $db)) {
@@ -314,19 +311,19 @@ if ($userId) {
 	<script src="bootstrap/js/bootstrap-typeahead.js" type="text/javascript"></script>
   <script type="text/javascript">// <![CDATA[ 
 
-  // $("#getMessages").click(function() {
-  //   if($(this).attr("disabled") !== true) {
-  //     $.ajax({
-  //       type: "POST",
-  //       url: "assets/php/fb_dumping.php",
-  //       data: {request: "Get Messages"}
-  //     });
+  $("#getMessages").click(function() {
+    if($(this).attr("disabled") !== true) {
+      $.ajax({
+        type: "POST",
+        url: "assets/php/fb_dumping.php",
+        data: {request: "Get Messages"}
+      });
 
-  //     alert("Your Facebook messages are now being processed!");
+      alert("Your Facebook messages are now being processed!");
 
-  //     $(this).attr("disabled", true);
-  //   }
-  // });
+      $(this).attr("disabled", true);
+    }
+  });
 
 	!function ($) {
 	        $(function(){
