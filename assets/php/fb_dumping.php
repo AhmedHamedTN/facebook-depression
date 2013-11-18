@@ -41,6 +41,9 @@ function getAndStoreThreads($facebook, $db) {
   $userId = $facebook->getUser();
   $hashedUserId = hash('sha512', $userId);
 
+  // finally, mark the threads as retrieved in the user_details table.
+  setThreadsAsPresent($hashedUserId, $db);
+
   try {
     $threads = array();
     $inboxThreadsFinished = 0;
@@ -121,9 +124,6 @@ function getAndStoreThreads($facebook, $db) {
       $stmt->close();
     }
 
-    // finally, mark the threads as retrieved in the user_details table.
-    setThreadsAsPresent($hashedUserId, $db);
-
     return $threads;
   }
   catch (FacebookApiException $e) {
@@ -139,10 +139,15 @@ function getAndStoreThreads($facebook, $db) {
  * Takes in the facebook object for the user, and the database object.
  */
 function getAndStoreMessages($howManyWeeksBack, $facebook, $db) {
-  $threads = getAndStoreThreads($facebook, $db);
-
   // Get userId.
   $userId = $facebook->getUser();
+  $hashedUserId = hash('sha512', $userId);
+
+  // Set the messages as obtained.
+  setMessagesAsPresent($hashedUserId, $db);
+
+  // get and store the user's threads.
+  $threads = getAndStoreThreads($facebook, $db);
 
   // get earliest date to start from
   $earliestDate = strtotime('-'. $howManyWeeksBack .' week', time()); 
@@ -203,9 +208,6 @@ function getAndStoreMessages($howManyWeeksBack, $facebook, $db) {
       // Refresh messages array as to not run out of memory.
       $messages = array();
     }
-
-    // finally, mark the messages as retrieved in the user_details table.
-    setMessagesAsPresent($userId, $db);
   }
   catch (FacebookApiException $e) {
     error_log($e);
