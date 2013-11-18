@@ -184,7 +184,7 @@ function getAndStoreMessages($howManyWeeksBack, $facebook, $db) {
 
       // Store the messages in the database
       foreach ($messages as $index => $threadRow) {
-        $stmt = $db->prepare("INSERT INTO facebook_messages (viewer_id, message_id, author_id, created_time, source, thread_id, attachment)
+        $stmt = $db->prepare("INSERT INTO facebook_messages (viewer_id, message_id, author_id, created_time, source, thread_id, has_attachment)
                                   VALUES (?, ?, ?, ?, ?, ?, ?)");
         $viewer_id = hash('sha512', $threadRow['viewer_id']);
         $message_id = hash('sha512', $threadRow['message_id']);
@@ -199,7 +199,7 @@ function getAndStoreMessages($howManyWeeksBack, $facebook, $db) {
         else {
           $attachment = 1;
         }
-        $stmt->bind_param('sssssss', $viewer_id, $message_id, $author_id, $created_time, $source, $thread_id, $attachment);
+        $stmt->bind_param('ssssssi', $viewer_id, $message_id, $author_id, $created_time, $source, $thread_id, $attachment);
         if (!$stmt->execute()) {
           echo '<br />Statement failed :(<br />';
         }
