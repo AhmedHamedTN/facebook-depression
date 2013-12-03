@@ -12,9 +12,13 @@ require dirname(__FILE__).'/user_records_helper.php';
 
 // set up fb instance.
 require dirname(__FILE__).'/../../src/facebook.php';
+
+// get fb config
+require dirname(__FILE__).'/../../fb_config.php';
+
 $facebook = new Facebook(array(
-  'appId'  => '549421855123854',
-  'secret' => '7739e409e40a90ce04dbcef70e1fb177',
+  'appId'  => $appId,
+  'secret' => $secret,
 ));
 
 // close the session to not block.
