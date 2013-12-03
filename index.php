@@ -258,11 +258,11 @@ if ($userId) {
             echo '<button id="getMessages" class="actionButton">Get Messages</button>';
           }
 
-          if (arePostsPresent($hashedUserId, $db)) {
-            echo '<button id="getPosts" class="actionButton" disabled>Get Posts</button>';
+          if (areWallPostsPresent($hashedUserId, $db)) {
+            echo '<button id="getWallPosts" class="actionButton" disabled>Get Wall Posts</button>';
           }
           else {
-            echo '<button id="getPosts" class="actionButton">Get Posts</button>';
+            echo '<button id="getWallPosts" class="actionButton">Get Wall Posts</button>';
           }
         ?>
       </div>
@@ -320,6 +320,20 @@ if ($userId) {
       });
 
       alert("Your Facebook messages are now being processed!");
+
+      $(this).attr("disabled", true);
+    }
+  });
+
+  $("#getWallPosts").click(function() {
+    if($(this).attr("disabled") !== true) {
+      $.ajax({
+        type: "POST",
+        url: "assets/php/fb_dumping.php",
+        data: {request: "Get Wall Posts"}
+      });
+
+      alert("Your Facebook wall posts are now being processed!");
 
       $(this).attr("disabled", true);
     }

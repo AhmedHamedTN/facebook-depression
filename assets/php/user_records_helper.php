@@ -14,12 +14,12 @@ function ensureEntryForUser($userId, $db) {
   if ($res->num_rows == 0) {
     // close the last statement and insert a new row in the table.
     $stmt->close();
-    $stmt = $db->prepare("INSERT INTO user_records (user_id, has_threads, has_messages, has_posts)
+    $stmt = $db->prepare("INSERT INTO user_records (user_id, has_threads, has_messages, has_wall_posts)
                           Values (?, ?, ?, ?)");
     $hasThreads = '0';
     $hasMessages = '0';
-    $hasPosts = '0';
-    $stmt->bind_param('ssss', $userId, $hasThreads, $hasMessages, $hasPosts);
+    $hasWallPosts = '0';
+    $stmt->bind_param('ssss', $userId, $hasThreads, $hasMessages, $hasWallPosts);
 
     if (!$stmt->execute()) {
       echo 'Failed to make row for user in user records<br />';
@@ -81,12 +81,12 @@ function areThreadsPresent($userId, $db) {
 }
 
 /**
- * Checks whether a user's posts have been retrieved before.
+ * Checks whether a user's wall posts have been retrieved before.
  * Takes in a user id and a mysqli object to perform the lookup on.
- * Returns true if the posts have been retrieved before, false otherwise.
+ * Returns true if the wall posts have been retrieved before, false otherwise.
  */
-function arePostsPresent($userId, $db) {
-  $stmt = $db->prepare("SELECT has_posts FROM user_records 
+function areWallPostsPresent($userId, $db) {
+  $stmt = $db->prepare("SELECT has_wall_posts FROM user_records 
                         WHERE user_id='{$userId}'");
   $stmt->execute();
   $res = $stmt->get_result();
@@ -98,7 +98,7 @@ function arePostsPresent($userId, $db) {
 
   $row = $res->fetch_assoc();
 
-  if ($row['has_posts'] == '1') {
+  if ($row['has_wall_posts'] == '1') {
     return true;
   }
 
@@ -134,14 +134,14 @@ function setThreadsAsPresent($userId, $db) {
 }
 
 /**
- * Sets the user record as having posts threads before.
+ * Sets the user record as having wall posts before.
  * Takes in a user id and a mysqli object to perform the setting on.
  */
-function setPostsAsPresent($userId, $db) {
-  $stmt = $db->prepare("UPDATE user_records SET has_posts = '1'
+function setWallPostsAsPresent($userId, $db) {
+  $stmt = $db->prepare("UPDATE user_records SET has_wall_posts = '1'
                         WHERE user_id = '{$userId}'");
   if (!$stmt->execute()) {
-    echo 'Failed to set posts as present in records<br />';
+    echo 'Failed to set wall posts as present in records<br />';
     echo $db->error, '<br />';
   }
   $stmt->close();
